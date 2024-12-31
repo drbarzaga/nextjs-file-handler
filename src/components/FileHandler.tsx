@@ -40,7 +40,6 @@ const FileHandler: FC<Props> = ({ availableFiles, onUpload, onDownload }) => {
     const formData = new FormData();
     formData.append("file", selectedFile);
     try {
-
       const response = await axios.post("/api/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -55,7 +54,6 @@ const FileHandler: FC<Props> = ({ availableFiles, onUpload, onDownload }) => {
         },
       });
 
-      
       console.log("File uploaded successfully", response.data);
       onUpload(selectedFile);
       setSelectedFile(null);
@@ -71,10 +69,28 @@ const FileHandler: FC<Props> = ({ availableFiles, onUpload, onDownload }) => {
     setIsDownloading(true);
     setProgress(0);
     try {
-      await onDownload(fileName);
-      setProgress(100);
+      const response = await axios.get(`/api/download/${fileName}`, {
+        responseType: "blob",
+        onDownloadProgress: (progressEvent: AxiosProgressEvent) => {
+          const percentCompleted = Math.round(
+            progressEvent.total
+              ? (progressEvent.loaded * 100) / progressEvent.total
+              : 0
+          );
+          setProgress(percentCompleted);
+        },
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      onDownload(fileName);
     } catch (error) {
-      console.error("Error downloading file:", error);
+      console.log(`Error downloading file: ${error}`);
+      setProgress(0);
     } finally {
       setIsDownloading(false);
     }
