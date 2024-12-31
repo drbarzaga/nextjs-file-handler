@@ -7,10 +7,6 @@ import { useCallback, useEffect, useState } from "react";
 export default function Home() {
   const [availableFiles, setAvailableFiles] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchAvailableFiles();
-  }, []);
-
   const fetchAvailableFiles = useCallback(async () => {
     try {
       const response = await axios.get("/api/files");
@@ -19,6 +15,10 @@ export default function Home() {
       console.error("Error fetching available files:", error);
     }
   }, []);
+
+  useEffect(() => {
+    fetchAvailableFiles();
+  }, [fetchAvailableFiles]);
 
   const simulateFileOperation = (duration: number): Promise<void> => {
     return new Promise((resolve) => {
