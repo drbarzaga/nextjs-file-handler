@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createReadStream, statSync } from "fs";
 import { access } from "fs/promises";
 import path from "path";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { filename: string } }
+  request: Request,
+  { params }: { params: Promise<{ filename: string }> }
 ) {
-  const filename = params.filename;
+  const filename = (await params).filename;
   const uploadDir = path.join(process.cwd(), "uploads");
   const filePath = path.join(uploadDir, filename);
 
